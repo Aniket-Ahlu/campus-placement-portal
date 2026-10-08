@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}403 - Forbidden | Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="card p-5 border-0 shadow-sm">
+            <div class="mb-4 text-danger">
+                <i class="bi bi-shield-x display-1"></i>
+            </div>
+            <h2 class="fw-bold mb-3">403 - Access Forbidden</h2>
+            <p class="text-muted fs-5 mb-4">
+                {{ message|default:"You do not have the required permissions or role to access this page." }}
+            </p>
+            <div>
+                <a href="{% url 'core:landing' %}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-house me-1"></i> Return Home
+                </a>
+                <a href="{% url 'core:dashboard_redirect' %}" class="btn btn-indigo">
+                    <i class="bi bi-speedometer2 me-1"></i> Go to My Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

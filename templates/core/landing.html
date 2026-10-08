@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Campus Placement & Internship Portal - Career Gateway{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center py-5 mb-4">
+    <div class="col-lg-7">
+        <span class="badge bg-indigo-light mb-3 px-3 py-2 fs-6 rounded-pill">
+            <i class="bi bi-stars text-indigo me-1"></i> Official University Placement System
+        </span>
+        <h1 class="display-4 fw-bold text-dark lh-tight mb-3">
+            Accelerate Your Career with <span class="text-indigo">Campus Placement</span>
+        </h1>
+        <p class="lead text-muted mb-4">
+            A unified, transparent hiring platform connecting university students, verified recruiting companies, and campus placement administrators with real-time pipeline tracking and strict eligibility enforcement.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'jobs:browse' %}" class="btn btn-indigo btn-lg px-4">
+                <i class="bi bi-briefcase me-2"></i> Browse Opportunities
+            </a>
+            {% if not request.user.is_authenticated %}
+                <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-dark btn-lg px-4">
+                    <i class="bi bi-mortarboard me-2"></i> Student Sign Up
+                </a>
+            {% else %}
+                <a href="{% url 'core:dashboard_redirect' %}" class="btn btn-outline-dark btn-lg px-4">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5 mt-4 mt-lg-0 text-center">
+        <div class="card p-4 shadow-sm border-0 bg-white">
+            <div class="row g-3 text-center">
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <i class="bi bi-briefcase fs-2 text-indigo mb-1 d-block"></i>
+                        <h3 class="fw-bold mb-0">{{ total_postings|default:"8" }}+</h3>
+                        <small class="text-muted">Active Postings</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <i class="bi bi-building fs-2 text-primary mb-1 d-block"></i>
+                        <h3 class="fw-bold mb-0">{{ total_companies|default:"2" }}+</h3>
+                        <small class="text-muted">Verified Companies</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <i class="bi bi-clock-history fs-2 text-success mb-1 d-block"></i>
+                        <h3 class="fw-bold mb-0">15s</h3>
+                        <small class="text-muted">Live Status Sync</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <i class="bi bi-shield-check fs-2 text-warning mb-1 d-block"></i>
+                        <h3 class="fw-bold mb-0">100%</h3>
+                        <small class="text-muted">Eligibility Gated</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 Role Portals Cards -->
+<div class="my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Three Dedicated Portals in One Platform</h2>
+        <p class="text-muted">Designed with strict role-based access control and tailored workflows.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Student Card -->
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 border-top border-4 border-indigo">
+                <div class="mb-3 text-indigo">
+                    <i class="bi bi-mortarboard-fill display-5"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Student Portal</h4>
+                <p class="text-muted mb-4">
+                    Explore approved jobs & internships. Proactive eligibility checking guarantees you apply only where you qualify. Track your hiring pipeline in real-time with visual timelines and instant withdraw capabilities.
+                </p>
+                <div class="mt-auto">
+                    {% if request.user.is_authenticated and request.user.is_student %}
+                        <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-outline-primary w-100">Go to Student Dashboard &rarr;</a>
+                    {% else %}
+                        <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-primary w-100">Register as Student &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recruiter Card -->
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 border-top border-4 border-primary">
+                <div class="mb-3 text-primary">
+                    <i class="bi bi-building-check display-5"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Recruiter Portal</h4>
+                <p class="text-muted mb-4">
+                    Register your company and post openings once verified. Filter applicants by branch and sort by CGPA. Progress candidates across interview stages singly or via batch actions with automatic timeline recording.
+                </p>
+                <div class="mt-auto">
+                    {% if request.user.is_authenticated and request.user.is_recruiter %}
+                        <a href="{% url 'jobs:recruiter_dashboard' %}" class="btn btn-outline-primary w-100">Go to Recruiter Dashboard &rarr;</a>
+                    {% else %}
+                        <a href="{% url 'accounts:register_recruiter' %}" class="btn btn-outline-primary w-100">Register as Recruiter &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Placement Admin Card -->
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 border-top border-4 border-dark">
+                <div class="mb-3 text-dark">
+                    <i class="bi bi-shield-lock-fill display-5"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Placement Admin</h4>
+                <p class="text-muted mb-4">
+                    Institutional oversight over incoming recruiters and job postings. Approve or reject with mandated reason logs. Access complete, append-only audit trail logs and comprehensive candidate metrics.
+                </p>
+                <div class="mt-auto">
+                    {% if request.user.is_authenticated and request.user.is_placement_admin %}
+                        <a href="{% url 'placement_admin:dashboard' %}" class="btn btn-outline-dark w-100">Go to Admin Portal &rarr;</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-dark w-100">Admin Login &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="bg-white rounded-3 p-5 my-5 border shadow-sm">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">How The Recruitment Cycle Works</h2>
+        <p class="text-muted">A structured four-step journey from onboarding to offer release.</p>
+    </div>
+    <div class="row g-4 text-center">
+        <div class="col-md-3">
+            <div class="p-3">
+                <div class="bg-indigo-light text-indigo rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fs-4 fw-bold">1</span>
+                </div>
+                <h5 class="fw-bold">Company Verification</h5>
+                <p class="text-muted small">Recruiters register their organization. Placement admins verify credentials before any jobs can be published.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3">
+                <div class="bg-indigo-light text-indigo rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fs-4 fw-bold">2</span>
+                </div>
+                <h5 class="fw-bold">Opportunity Moderation</h5>
+                <p class="text-muted small">Job & internship roles are reviewed by admins. Clear eligibility criteria (CGPA, Branch, Batch) are enforced.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3">
+                <div class="bg-indigo-light text-indigo rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fs-4 fw-bold">3</span>
+                </div>
+                <h5 class="fw-bold">Strict Gated Apply</h5>
+                <p class="text-muted small">Students see proactive eligibility feedback. The server verifies academic prerequisites on submission.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3">
+                <div class="bg-indigo-light text-indigo rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fs-4 fw-bold">4</span>
+                </div>
+                <h5 class="fw-bold">Real-time Pipeline</h5>
+                <p class="text-muted small">Applications advance from review to interview and offer with audit trails and 15s live status synchronization.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

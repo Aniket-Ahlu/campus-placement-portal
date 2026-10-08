@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Jobs & Internships - Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Browse Postings</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold mb-1">Explore Campus Opportunities</h2>
+        <p class="text-muted mb-0">Browse through approved recruitment drives and internship openings.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-2 mt-md-0">
+        <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+            <i class="bi bi-briefcase-fill text-indigo me-1"></i> {{ total_count }} Available Roles
+        </span>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card p-3 shadow-sm mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Keyword Search</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Role, company, location, tech...">
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Opportunity Type</label>
+            <select name="job_type" class="form-select">
+                <option value="">All Types</option>
+                <option value="JOB" {% if selected_job_type == 'JOB' %}selected{% endif %}>Full-time Job</option>
+                <option value="INTERNSHIP" {% if selected_job_type == 'INTERNSHIP' %}selected{% endif %}>Internship</option>
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-3 col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Eligible Branch</label>
+            <select name="branch" class="form-select">
+                <option value="">All Branches</option>
+                {% for b in branches %}
+                    <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>
+                        {{ b.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6 col-6">
+            <label class="form-label small fw-semibold text-muted mb-1">Max Min CGPA</label>
+            <input type="number" step="0.1" min="0" max="10" name="min_cgpa" value="{{ selected_min_cgpa }}" class="form-control" placeholder="e.g. 7.5">
+        </div>
+
+        <div class="col-lg-1 col-md-6 col-6 d-grid">
+            <button type="submit" class="btn btn-indigo">
+                Filter
+            </button>
+        </div>
+    </form>
+    {% if search_query or selected_job_type or selected_branch or selected_min_cgpa %}
+        <div class="mt-2 text-end">
+            <a href="{% url 'jobs:browse' %}" class="small text-danger text-decoration-none">
+                <i class="bi bi-x-circle me-1"></i> Clear all filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Jobs Grid -->
+{% if page_obj %}
+    <div class="row g-4 mb-4">
+        {% for posting in page_obj %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 card-hover shadow-sm border p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge {% if posting.job_type == 'JOB' %}bg-primary{% else %}bg-info text-dark{% endif %}">
+                            {{ posting.get_job_type_display }}
+                        </span>
+
+                        {% if request.user.is_authenticated and request.user.is_student %}
+                            {% if posting.already_applied %}
+                                <span class="badge bg-success-subtle text-success border border-success">
+                                    <i class="bi bi-check2-circle me-1"></i> Applied
+                                </span>
+                            {% elif posting.is_eligible %}
+                                <span class="badge bg-indigo-light text-indigo border">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Eligible for you
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <h5 class="fw-bold mb-1">
+                        <a href="{% url 'jobs:detail' posting.id %}" class="text-decoration-none text-dark">
+                            {{ posting.title }}
+                        </a>
+                    </h5>
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-building me-1"></i> {{ posting.company.name }} &bull;
+                        <i class="bi bi-geo-alt me-1"></i> {{ posting.location }}
+                    </div>
+
+                    <p class="text-secondary small mb-3 flex-grow-1">
+                        {{ posting.description|truncatewords:22 }}
+                    </p>
+
+                    <div class="border-top pt-2 mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2 small">
+                            <span class="fw-bold text-success">
+                                <i class="bi bi-cash-stack me-1"></i> {{ posting.salary_or_stipend }}
+                            </span>
+                            <span class="text-muted">
+                                Min CGPA: <strong>{{ posting.min_cgpa }}</strong>
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted">
+                            <span><i class="bi bi-calendar-event me-1"></i> Deadline: {{ posting.deadline|date:"M d, Y" }}</span>
+                            <a href="{% url 'jobs:detail' posting.id %}" class="btn btn-outline-primary btn-sm">
+                                Details &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination Controls (9 per page) -->
+    {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_job_type %}&job_type={{ selected_job_type }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_min_cgpa %}&min_cgpa={{ selected_min_cgpa }}{% endif %}">
+                            &laquo; Previous
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link bg-indigo border-indigo">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_job_type %}&job_type={{ selected_job_type }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_min_cgpa %}&min_cgpa={{ selected_min_cgpa }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_job_type %}&job_type={{ selected_job_type }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_min_cgpa %}&min_cgpa={{ selected_min_cgpa }}{% endif %}">
+                            Next &raquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+{% else %}
+    <div class="card p-5 text-center shadow-sm">
+        <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+        <h4 class="fw-bold">No Postings Match Your Search</h4>
+        <p class="text-muted">Try adjusting your keyword, branch criteria, or minimum CGPA filters.</p>
+        <div>
+            <a href="{% url 'jobs:browse' %}" class="btn btn-outline-secondary">Reset Filters</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

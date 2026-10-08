@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}My Applications - Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:student_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">My Applications</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold mb-1">My Application Portfolio</h2>
+        <p class="text-muted mb-0">Monitor your recruitment stages, interview invitations, and offers in real-time.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-2 mt-md-0" id="status-feed-indicator">
+        <span class="badge bg-light text-dark border px-3 py-2 small shadow-sm" id="status-feed-last-sync">
+            <span class="live-pulse me-1"></span> Live Sync Initializing...
+        </span>
+    </div>
+</div>
+
+<!-- Status Filter Pills -->
+<div class="card p-3 shadow-sm mb-4 bg-white">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="small fw-semibold text-muted me-2">Filter by Status:</span>
+        <a href="{% url 'applications:my_applications' %}" class="btn btn-sm {% if not selected_status %}btn-indigo{% else %}btn-outline-secondary{% endif %}">
+            All ({{ applications.count }})
+        </a>
+        {% for st_val, st_lbl in status_choices %}
+            <a href="?status={{ st_val }}" class="btn btn-sm {% if selected_status == st_val %}btn-indigo{% else %}btn-outline-secondary{% endif %}">
+                {{ st_lbl }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th class="ps-4">Job Role & Organization</th>
+                            <th>Role Type</th>
+                            <th>Current Stage</th>
+                            <th>Applied Date</th>
+                            <th>Last Update</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr data-app-id="{{ app.id }}">
+                                <td class="ps-4">
+                                    <h6 class="fw-bold mb-0 text-dark">
+                                        <a href="{% url 'applications:detail' app.id %}" class="text-decoration-none text-dark">
+                                            {{ app.posting.title }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ app.posting.company.name }} &bull; {{ app.posting.location }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ app.posting.get_job_type_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {{ app.badge_class }} status-badge fs-7">
+                                        {{ app.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="small text-muted">{{ app.applied_at|date:"M d, Y" }}</td>
+                                <td class="small text-muted app-updated-at">{{ app.updated_at|date:"M d, Y, g:i A" }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'applications:detail' app.id %}" class="btn btn-indigo btn-sm">
+                                        <i class="bi bi-clock-history me-1"></i> Track &rarr;
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-file-earmark-x fs-1 d-block mb-3 text-secondary"></i>
+                <h5 class="fw-bold">No applications found</h5>
+                <p class="small text-muted mb-3">You haven't applied to any job postings under this status filter.</p>
+                <a href="{% url 'jobs:browse' %}" class="btn btn-indigo btn-sm">
+                    <i class="bi bi-briefcase me-1"></i> Browse Open Postings
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

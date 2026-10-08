@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Recruiter Registration - Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-8">
+        <div class="card p-4 p-md-5 shadow-sm">
+            <div class="mb-4 text-center">
+                <i class="bi bi-building-add fs-1 text-primary"></i>
+                <h3 class="fw-bold mt-2">Recruiter Registration</h3>
+                <p class="text-muted small">Register your company to recruit top talent from the university</p>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">1. Recruiter Account</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Work Email *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Confirm Password *</label>
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">2. Company Information</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Company Name *</label>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}<div class="text-danger small mt-1">{{ form.company_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Corporate Website URL *</label>
+                        {{ form.company_website }}
+                        {% if form.company_website.errors %}<div class="text-danger small mt-1">{{ form.company_website.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Industry / Sector *</label>
+                        {{ form.company_industry }}
+                        {% if form.company_industry.errors %}<div class="text-danger small mt-1">{{ form.company_industry.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Headquarters / Location *</label>
+                        {{ form.company_location }}
+                        {% if form.company_location.errors %}<div class="text-danger small mt-1">{{ form.company_location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Company Description *</label>
+                        {{ form.company_description }}
+                        <div class="form-text">Describe your enterprise products, hiring mission, and culture.</div>
+                        {% if form.company_description.errors %}<div class="text-danger small mt-1">{{ form.company_description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="alert alert-info py-2 small mb-4">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    <strong>Approval Notice:</strong> After registration, your company will enter the <em>Pending Approval</em> queue. Placement admins must approve your credentials before job postings can be published.
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fs-5">
+                    <i class="bi bi-building-check me-1"></i> Register Organization
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top small text-muted">
+                Already registered? <a href="{% url 'accounts:login' %}" class="fw-semibold text-decoration-none">Log in here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

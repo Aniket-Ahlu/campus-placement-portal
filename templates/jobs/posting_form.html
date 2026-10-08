@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_postings' %}">Postings</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4 p-md-5 shadow-sm">
+            <h3 class="fw-bold mb-1 text-dark">{{ title }}</h3>
+            <p class="text-muted mb-3">Define position responsibilities, compensation, and candidate eligibility thresholds.</p>
+
+            {% if is_edit and posting.status == 'APPROVED' %}
+                <div class="alert alert-warning small mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>Compliance Notice:</strong> Editing an approved posting resets its status back to <strong>PENDING</strong> for placement admin re-verification to prevent unmonitored changes to eligibility criteria.
+                </div>
+            {% elif is_edit and posting.status == 'REJECTED' %}
+                <div class="alert alert-danger small mb-4">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    <strong>Rejection Notice:</strong> Previous admin comment: <em>{{ posting.rejection_reason }}</em>. Editing and saving this form will resubmit the posting for review.
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">1. Role Information</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Job Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Opportunity Type *</label>
+                        {{ form.job_type }}
+                        {% if form.job_type.errors %}<div class="text-danger small mt-1">{{ form.job_type.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Work Location / Mode *</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Compensation / Monthly Stipend *</label>
+                        {{ form.salary_or_stipend }}
+                        {% if form.salary_or_stipend.errors %}<div class="text-danger small mt-1">{{ form.salary_or_stipend.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Full Job Description & Requirements *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">2. Eligibility Thresholds & Criteria</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Minimum CGPA (0.00 - 10.00) *</label>
+                        {{ form.min_cgpa }}
+                        {% if form.min_cgpa.errors %}<div class="text-danger small mt-1">{{ form.min_cgpa.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Target Graduation Year (Optional)</label>
+                        {{ form.graduation_year }}
+                        <div class="form-text">Leave blank if open to all passing years.</div>
+                        {% if form.graduation_year.errors %}<div class="text-danger small mt-1">{{ form.graduation_year.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Application Deadline *</label>
+                        {{ form.deadline }}
+                        {% if form.deadline.errors %}<div class="text-danger small mt-1">{{ form.deadline.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold d-block">Eligible Academic Branches</label>
+                        <div class="p-3 bg-light rounded border">
+                            <div class="row g-2">
+                                {% for choice in form.allowed_branches %}
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-check">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label small" for="{{ choice.id_for_label }}">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="form-text mt-1">Leave all unchecked to accept candidates from any engineering branch.</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'jobs:recruiter_postings' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i> Save & Submit for Approval
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

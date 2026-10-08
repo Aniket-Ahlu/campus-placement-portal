@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}User Directory | Placement Admin Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'placement_admin:dashboard' %}">Admin Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Registered Users</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Registered Users Directory</h2>
+        <p class="text-muted mb-0">Read-only administrative directory of all accounts registered on the portal.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+            <i class="bi bi-people-fill text-indigo me-1"></i> {{ total_users }} Total Registered Users
+        </span>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card p-3 shadow-sm mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label small fw-semibold text-muted mb-1">Search User</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Username, email, legal name...">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Filter by Role</label>
+            <select name="role" class="form-select form-select-sm">
+                <option value="">All Roles</option>
+                {% for r_code, r_lbl in role_choices %}
+                    <option value="{{ r_code }}" {% if selected_role == r_code %}selected{% endif %}>{{ r_lbl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-indigo btn-sm">Filter Directory</button>
+        </div>
+    </form>
+</div>
+
+<!-- Users Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th class="ps-4">User ID & Username</th>
+                            <th>Role</th>
+                            <th>Full Name / Associated Info</th>
+                            <th>Email Address</th>
+                            <th>Date Joined</th>
+                            <th>Last Active</th>
+                            <th class="pe-4">Account Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in page_obj %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-light text-dark border me-1">#{{ u.id }}</span>
+                                    <strong class="text-dark">{{ u.username }}</strong>
+                                </td>
+                                <td>
+                                    {% if u.role == 'STUDENT' %}
+                                        <span class="badge bg-indigo-light text-indigo">Student</span>
+                                    {% elif u.role == 'RECRUITER' %}
+                                        <span class="badge bg-primary">Recruiter</span>
+                                    {% elif u.role == 'ADMIN' %}
+                                        <span class="badge bg-dark">Placement Admin</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.is_student and u.student_profile %}
+                                        {{ u.student_profile.full_name|default:"-" }}
+                                        {% if u.student_profile.branch %}
+                                            <small class="text-muted d-block">({{ u.student_profile.branch.name }})</small>
+                                        {% endif %}
+                                    {% elif u.is_recruiter %}
+                                        {% with comp=u.companies.first %}
+                                            {% if comp %}
+                                                {{ comp.name }}
+                                                <small class="text-muted d-block">({{ comp.status }})</small>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        Placement Staff
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ u.email }}</td>
+                                <td class="small text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
+                                <td class="small text-muted">{{ u.last_login|date:"M d, Y, g:i A"|default:"Never" }}</td>
+                                <td class="pe-4">
+                                    {% if u.is_active %}
+                                        <span class="badge bg-success-subtle text-success border border-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="p-3 border-top d-flex justify-content-center">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&role={{ selected_role }}&q={{ search_query }}">&laquo; Previous</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link bg-indigo border-indigo">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&role={{ selected_role }}&q={{ search_query }}">Next &raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-people fs-1 d-block mb-3 text-secondary"></i>
+                <h5 class="fw-bold">No Users Found</h5>
+                <p class="small mb-0">Try clearing your search query or role filter.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ posting.title }} - {{ posting.company.name }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:browse' %}">Browse Postings</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ posting.title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Role Details -->
+    <div class="col-lg-8">
+        <div class="card p-4 shadow-sm mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div>
+                    <span class="badge {% if posting.job_type == 'JOB' %}bg-primary{% else %}bg-info text-dark{% endif %} mb-2">
+                        {{ posting.get_job_type_display }}
+                    </span>
+                    <h2 class="fw-bold mb-1 text-dark">{{ posting.title }}</h2>
+                    <h5 class="text-muted mb-0">
+                        <i class="bi bi-building me-1"></i> {{ posting.company.name }} &bull;
+                        <i class="bi bi-geo-alt me-1"></i> {{ posting.location }}
+                    </h5>
+                </div>
+                <div>
+                    <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                        <i class="bi bi-cash-stack text-success me-1"></i> {{ posting.salary_or_stipend }}
+                    </span>
+                </div>
+            </div>
+
+            <hr class="my-3">
+
+            <h5 class="fw-bold text-dark mb-3">Role Overview & Responsibilities</h5>
+            <div class="text-secondary lh-lg mb-4" style="white-space: pre-line;">
+                {{ posting.description }}
+            </div>
+
+            <h5 class="fw-bold text-dark mb-3">Eligibility Specifications</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Requirement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">Minimum CGPA</td>
+                            <td>{{ posting.min_cgpa }} / 10.00</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Eligible Branches</td>
+                            <td>
+                                {% if posting.allowed_branches.exists %}
+                                    {% for b in posting.allowed_branches.all %}
+                                        <span class="badge bg-light text-dark border me-1">{{ b.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success border">Open to All Engineering Branches</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Graduation Batch</td>
+                            <td>
+                                {% if posting.graduation_year %}
+                                    Class of {{ posting.graduation_year }}
+                                {% else %}
+                                    Open to All Batches
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Application Deadline</td>
+                            <td>{{ posting.deadline|date:"l, F d, Y" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- About The Company Card -->
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-dark mb-2">About {{ posting.company.name }}</h5>
+            <p class="text-muted small mb-2">
+                <strong>Industry:</strong> {{ posting.company.industry }} &bull;
+                <strong>Location:</strong> {{ posting.company.location }} &bull;
+                <a href="{{ posting.company.website }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Visit Website
+                </a>
+            </p>
+            <p class="text-secondary small mb-0">{{ posting.company.description }}</p>
+        </div>
+    </div>
+
+    <!-- Right Column: Eligibility & Apply Action Box -->
+    <div class="col-lg-4">
+        <!-- Recruiter management options if owner -->
+        {% if is_recruiter_owner %}
+            <div class="card p-3 shadow-sm mb-4 border-primary">
+                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-gear-fill me-1"></i> Recruiter Posting Controls</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'applications:recruiter_applicants' posting.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-people-fill me-1"></i> View Applicants ({{ posting.applications.count }})
+                    </a>
+                    <a href="{% url 'jobs:recruiter_posting_edit' posting.id %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Posting Details
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Student Application & Eligibility Card -->
+        <div class="card p-4 shadow-sm border sticky-top" style="top: 80px;">
+            <h5 class="fw-bold mb-3"><i class="bi bi-shield-check text-indigo me-2"></i>Application Status</h5>
+
+            {% if not request.user.is_authenticated %}
+                <div class="alert alert-info small mb-3">
+                    <i class="bi bi-info-circle me-1"></i> Log in with your student account to check automated eligibility and apply.
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-indigo">
+                        Log In to Apply
+                    </a>
+                    <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-secondary">
+                        Create Student Account
+                    </a>
+                </div>
+
+            {% elif request.user.is_student %}
+                {% if has_applied %}
+                    <div class="alert alert-info mb-3">
+                        <div class="fw-bold mb-1"><i class="bi bi-check-circle-fill text-success me-1"></i> Already Applied!</div>
+                        <div class="small">You submitted an application for this role. Current Status:</div>
+                        <div class="mt-2">
+                            <span class="badge {{ existing_application.badge_class }} fs-6">{{ existing_application.get_status_display }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'applications:detail' existing_application.id %}" class="btn btn-indigo w-100">
+                        <i class="bi bi-clock-history me-1"></i> View Live Application Timeline
+                    </a>
+
+                {% elif is_eligible %}
+                    <div class="alert alert-success mb-3 small">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        <strong>You are eligible to apply!</strong> All your academic credentials (CGPA, Branch, Graduation Year) meet the requirements.
+                    </div>
+                    <a href="{% url 'applications:apply' posting.id %}" class="btn btn-success btn-lg w-100 fw-bold">
+                        <i class="bi bi-send-fill me-1"></i> Apply Now
+                    </a>
+
+                {% else %}
+                    <!-- Proactive Ineligibility Box -->
+                    <div class="alert alert-danger mb-3 small">
+                        <div class="fw-bold mb-2">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> You are not eligible to apply:
+                        </div>
+                        <ul class="mb-0 ps-3">
+                            {% for reason in eligibility_reasons %}
+                                <li class="mb-1">{{ reason }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-secondary btn-lg w-100" disabled>
+                        <i class="bi bi-slash-circle me-1"></i> Apply Disabled (Ineligible)
+                    </button>
+                    <div class="text-center mt-2">
+                        <a href="{% url 'accounts:student_profile' %}" class="small text-muted text-decoration-none">
+                            Update your profile details &rarr;
+                        </a>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div class="alert alert-light border small text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i> You are signed in as <strong>{{ request.user.get_role_display }}</strong>. Direct applications are reserved for students.
+                </div>
+            {% endif %}
+
+            <div class="border-top pt-3 mt-4 small text-muted">
+                <div><i class="bi bi-calendar-check me-2"></i><strong>Deadline:</strong> {{ posting.deadline|date:"M d, Y" }}</div>
+                <div class="mt-1"><i class="bi bi-patch-check me-2"></i><strong>Verified Posting:</strong> University Approved</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

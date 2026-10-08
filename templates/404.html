@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Not Found | Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="card p-5 border-0 shadow-sm">
+            <div class="mb-4 text-warning">
+                <i class="bi bi-search display-1"></i>
+            </div>
+            <h2 class="fw-bold mb-3">404 - Page Not Found</h2>
+            <p class="text-muted fs-5 mb-4">
+                {{ message|default:"The page, job posting, or record you requested could not be found or is no longer available." }}
+            </p>
+            <div>
+                <a href="{% url 'jobs:browse' %}" class="btn btn-indigo me-2">
+                    <i class="bi bi-briefcase me-1"></i> Browse Open Postings
+                </a>
+                <a href="{% url 'core:landing' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-1"></i> Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

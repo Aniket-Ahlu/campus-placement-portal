@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:student_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Student Profile</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Completeness Status Card -->
+        <div class="card p-4 shadow-sm mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-indigo me-2"></i>Profile Completion Status</h5>
+                <span class="badge {% if profile.completion_percentage == 100 %}bg-success{% else %}bg-indigo{% endif %} fs-6">
+                    {{ profile.completion_percentage }}% Complete
+                </span>
+            </div>
+            <div class="progress my-2" style="height: 8px;">
+                <div class="progress-bar {% if profile.completion_percentage == 100 %}bg-success{% else %}bg-indigo{% endif %}" role="progressbar" style="width: {{ profile.completion_percentage }}%;" aria-valuenow="{{ profile.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p class="text-muted small mb-0">
+                A 100% complete profile is recommended to satisfy all automated eligibility checks when applying to campus postings.
+            </p>
+        </div>
+
+        <!-- Profile Edit Card -->
+        <div class="card p-4 shadow-sm">
+            <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark">Edit Candidate Profile</h4>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Legal Name *</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Branch of Study *</label>
+                        {{ form.branch }}
+                        {% if form.branch.errors %}<div class="text-danger small mt-1">{{ form.branch.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Cumulative CGPA * (0.00 - 10.00)</label>
+                        {{ form.cgpa }}
+                        {% if form.cgpa.errors %}<div class="text-danger small mt-1">{{ form.cgpa.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Graduation Year *</label>
+                        {{ form.graduation_year }}
+                        {% if form.graduation_year.errors %}<div class="text-danger small mt-1">{{ form.graduation_year.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Contact Phone</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Resume Link *</label>
+                        {{ form.resume_link }}
+                        <div class="form-text">Provide an accessible cloud link (e.g., Google Drive / GitHub / Dropbox) to your PDF resume.</div>
+                        {% if form.resume_link.errors %}<div class="text-danger small mt-1">{{ form.resume_link.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'accounts:student_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-indigo px-4">
+                        <i class="bi bi-check-lg me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

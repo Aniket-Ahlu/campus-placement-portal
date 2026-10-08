@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Job Postings - {{ company.name }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_dashboard' %}">Recruiter Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Postings Management</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold mb-1">Company Job Postings</h2>
+        <p class="text-muted mb-0">Publish openings, inspect applications, and toggle application acceptance.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        {% if company.is_approved %}
+            <a href="{% url 'jobs:recruiter_posting_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Create New Posting
+            </a>
+        {% else %}
+            <span class="badge bg-warning text-dark p-2">Company verification required to post</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if postings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th class="ps-4">Title & Details</th>
+                            <th>Type</th>
+                            <th>Min CGPA</th>
+                            <th>Deadline</th>
+                            <th>Admin Status</th>
+                            <th>Application State</th>
+                            <th>Applicants</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in postings %}
+                            <tr>
+                                <td class="ps-4">
+                                    <h6 class="fw-bold mb-0 text-dark">{{ post.title }}</h6>
+                                    <small class="text-muted">{{ post.location }} &bull; <strong class="text-success">{{ post.salary_or_stipend }}</strong></small>
+                                    {% if post.status == 'REJECTED' and post.rejection_reason %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="bi bi-info-circle me-1"></i> Admin Rejection: {{ post.rejection_reason }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ post.get_job_type_display }}</span>
+                                </td>
+                                <td>{{ post.min_cgpa }}</td>
+                                <td class="small">{{ post.deadline|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if post.status == 'APPROVED' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif post.status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark">Pending Review</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if post.is_open %}
+                                        <span class="badge bg-success-subtle text-success border border-success">
+                                            <i class="bi bi-check-circle me-1"></i> Open
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-pause-circle me-1"></i> Closed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'applications:recruiter_applicants' post.id %}" class="badge bg-indigo text-decoration-none px-2 py-1">
+                                        <i class="bi bi-people-fill me-1"></i> {{ post.applicant_count }} Applicants
+                                    </a>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- Edit button -->
+                                        <a href="{% url 'jobs:recruiter_posting_edit' post.id %}" class="btn btn-outline-secondary" title="Edit Posting">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <!-- Toggle Open/Close button -->
+                                        <form method="post" action="{% url 'jobs:recruiter_posting_toggle' post.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to {% if post.is_open %}close{% else %}reopen{% endif %} applications for this posting?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn {% if post.is_open %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="{% if post.is_open %}Close Applications{% else %}Reopen Applications{% endif %}">
+                                                <i class="bi {% if post.is_open %}bi-pause-fill{% else %}bi-play-fill{% endif %}"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- View Applicants -->
+                                        <a href="{% url 'applications:recruiter_applicants' post.id %}" class="btn btn-outline-primary" title="Review Applicants">
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-briefcase fs-1 d-block mb-3 text-secondary"></i>
+                <h5 class="fw-bold">No postings created yet</h5>
+                <p class="small text-muted mb-3">Begin by creating an opening for university students.</p>
+                {% if company.is_approved %}
+                    <a href="{% url 'jobs:recruiter_posting_create' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Create Posting
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Inspect Posting - {{ posting.title }} | Placement Admin Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'placement_admin:dashboard' %}">Admin Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'placement_admin:postings_queue' %}">Postings Queue</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ posting.title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4 p-md-5 shadow-sm mb-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div>
+                    <span class="badge {% if posting.status == 'APPROVED' %}bg-success{% elif posting.status == 'PENDING' %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6 mb-2">
+                        Status: {{ posting.get_status_display }}
+                    </span>
+                    <h2 class="fw-bold mb-1 text-dark">{{ posting.title }}</h2>
+                    <h5 class="text-muted mb-0">
+                        <i class="bi bi-building me-1"></i> {{ posting.company.name }} &bull;
+                        <i class="bi bi-geo-alt me-1"></i> {{ posting.location }}
+                    </h5>
+                </div>
+                <div class="text-md-end">
+                    <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                        Package: <strong class="text-success">{{ posting.salary_or_stipend }}</strong>
+                    </span>
+                </div>
+            </div>
+
+            {% if posting.status == 'REJECTED' and posting.rejection_reason %}
+                <div class="alert alert-danger mb-4 small">
+                    <strong><i class="bi bi-exclamation-octagon-fill me-1"></i> Placement Admin Reason Recorded:</strong>
+                    <div>{{ posting.rejection_reason }}</div>
+                </div>
+            {% endif %}
+
+            <hr class="my-3">
+
+            <!-- Core Specifications -->
+            <h5 class="fw-bold text-dark mb-3">Criteria & Parameters</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm small">
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold" style="width: 30%;">Employer Verification</td>
+                            <td>
+                                <span class="badge {% if posting.company.status == 'APPROVED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                    {{ posting.company.get_status_display }}
+                                </span>
+                                ({{ posting.company.name }})
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Recruiter Account</td>
+                            <td><code>{{ posting.company.owner.username }}</code> ({{ posting.company.owner.email }})</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Minimum Required CGPA</td>
+                            <td><strong>{{ posting.min_cgpa }}</strong> / 10.00</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Eligible Branches</td>
+                            <td>
+                                {% if posting.allowed_branches.exists %}
+                                    {% for b in posting.allowed_branches.all %}
+                                        <span class="badge bg-light text-dark border me-1">{{ b.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success border">Open to All Branches</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Graduation Batch</td>
+                            <td>{{ posting.graduation_year|default:"All Graduating Batches" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Deadline</td>
+                            <td>{{ posting.deadline|date:"l, F d, Y" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-2">Job Description & Terms</h5>
+            <div class="p-3 bg-light rounded text-secondary lh-lg mb-4 border" style="white-space: pre-line;">
+                {{ posting.description }}
+            </div>
+
+            <!-- Moderation Buttons Bar -->
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{% url 'placement_admin:postings_queue' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Queue
+                </a>
+
+                <div class="btn-group">
+                    {% if posting.status != 'APPROVED' %}
+                        <form method="post" action="{% url 'placement_admin:moderate_posting' posting.id %}" class="d-inline" onsubmit="return confirm('Approve posting {{ posting.title }}?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="APPROVE">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-check-lg me-1"></i> Approve Posting
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {% if posting.status != 'REJECTED' %}
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectPostingModal">
+                            <i class="bi bi-x-lg me-1"></i> Reject with Reason
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div class="modal fade" id="rejectPostingModal" tabindex="-1" aria-labelledby="rejectPostingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'placement_admin:moderate_posting' posting.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="REJECT">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger" id="rejectPostingModalLabel">
+                        <i class="bi bi-shield-x me-1"></i> Reject Posting: {{ posting.title }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">A reason is strictly mandatory. It will be recorded in the append-only audit trail and communicated to the employer.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mandatory Rejection Reason *</label>
+                        <textarea name="reason" class="form-control" rows="4" required placeholder="Specify reason (e.g. stipend below minimum university threshold, prohibited bond period)..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

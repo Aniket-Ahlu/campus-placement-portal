@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Applicants - {{ posting.title }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_postings' %}">Postings</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Applicants ({{ posting.title }})</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <span class="badge bg-light text-dark border mb-1">{{ posting.get_job_type_display }} &bull; Min CGPA: {{ posting.min_cgpa }}</span>
+        <h2 class="fw-bold mb-0">Applicants for {{ posting.title }}</h2>
+        <p class="text-muted small mb-0">{{ total_count }} total applications submitted</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <a href="{% url 'jobs:recruiter_postings' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Postings
+        </a>
+    </div>
+</div>
+
+<!-- Filters & Sorting Bar -->
+<div class="card p-3 shadow-sm mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Filter Status</label>
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Stages ({{ total_count }})</option>
+                {% for st_val, st_lbl in status_choices %}
+                    <option value="{{ st_val }}" {% if selected_status == st_val %}selected{% endif %}>
+                        {{ st_lbl }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Sort Order</label>
+            <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="applied_desc" {% if selected_sort == 'applied_desc' %}selected{% endif %}>Applied Date (Newest First)</option>
+                <option value="cgpa_desc" {% if selected_sort == 'cgpa_desc' %}selected{% endif %}>CGPA (Highest First)</option>
+                <option value="cgpa_asc" {% if selected_sort == 'cgpa_asc' %}selected{% endif %}>CGPA (Lowest First)</option>
+                <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Candidate Name (A-Z)</option>
+            </select>
+        </div>
+
+        <div class="col-md-4 text-md-end mt-auto">
+            {% if selected_status or selected_sort != 'applied_desc' %}
+                <a href="{% url 'applications:recruiter_applicants' posting.id %}" class="btn btn-outline-danger btn-sm">
+                    Reset Filter
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Batch Action Form & Table -->
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="batch_update" value="1">
+
+    <!-- Batch Controls Box -->
+    <div class="card p-3 bg-light border mb-3 shadow-sm">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <span class="fw-bold small text-dark"><i class="bi bi-check2-square text-primary me-1"></i> Batch Status Transition:</span>
+            </div>
+            <div class="col-md-3">
+                <select name="target_status" class="form-select form-select-sm" required>
+                    <option value="">Select Target Status...</option>
+                    {% for st_val, st_lbl in transition_targets %}
+                        <option value="{{ st_val }}">{{ st_lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="batch_note" class="form-control form-select-sm" placeholder="Optional audit note (e.g. Cleared round 1)">
+            </div>
+            <div class="col-md-2 text-md-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100" onclick="return confirm('Apply this status transition to all selected candidates? Invalid transitions will be skipped.');">
+                    Apply Batch
+                </button>
+            </div>
+        </div>
+        <div class="text-muted small mt-1">
+            <i class="bi bi-info-circle me-1"></i> Rule: Transition pipeline is strictly enforced. Invalid transitions in a batch are skipped and reported.
+        </div>
+    </div>
+
+    <!-- Applicants Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th style="width: 40px;" class="ps-3">
+                                    <input type="checkbox" class="form-check-input" id="selectAllCheckbox" onclick="toggleAllApplicants(this)">
+                                </th>
+                                <th>Candidate</th>
+                                <th>Branch</th>
+                                <th>CGPA</th>
+                                <th>Grad Year</th>
+                                <th>Resume</th>
+                                <th>Current Status</th>
+                                <th>Applied Date</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <input type="checkbox" name="selected_applicants" value="{{ app.id }}" class="form-check-input applicant-checkbox">
+                                    </td>
+                                    <td>
+                                        <h6 class="fw-bold mb-0 text-dark">
+                                            <a href="{% url 'applications:recruiter_applicant_detail' app.id %}" class="text-decoration-none text-dark">
+                                                {{ app.student.student_profile.full_name|default:app.student.username }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">{{ app.student.email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ app.student.student_profile.branch.name|default:"N/A" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-dark">{{ app.student.student_profile.cgpa }}</span>
+                                    </td>
+                                    <td class="small">{{ app.student.student_profile.graduation_year|default:"-" }}</td>
+                                    <td>
+                                        {% if app.student.student_profile.resume_link %}
+                                            <a href="{{ app.student.student_profile.resume_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm py-0 px-2">
+                                                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted small">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ app.badge_class }}">
+                                            {{ app.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="small text-muted">{{ app.applied_at|date:"M d, Y" }}</td>
+                                    <td class="text-end pe-3">
+                                        <a href="{% url 'applications:recruiter_applicant_detail' app.id %}" class="btn btn-outline-primary btn-sm">
+                                            Review &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-people fs-1 d-block mb-3 text-secondary"></i>
+                    <h5 class="fw-bold">No candidates found</h5>
+                    <p class="small text-muted mb-0">No applications match the current filter criteria for this posting.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+function toggleAllApplicants(master) {
+    const checkboxes = document.querySelectorAll('.applicant-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Registration - Campus Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-8">
+        <div class="card p-4 p-md-5 shadow-sm">
+            <div class="mb-4 text-center">
+                <i class="bi bi-mortarboard-fill fs-1 text-indigo"></i>
+                <h3 class="fw-bold mt-2">Student Registration</h3>
+                <p class="text-muted small">Create your candidate profile to apply for placement & internship drives</p>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">1. Account Credentials</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Confirm Password *</label>
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">2. Academic & Personal Details</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Name *</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Branch of Study *</label>
+                        {{ form.branch }}
+                        {% if form.branch.errors %}<div class="text-danger small mt-1">{{ form.branch.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Cumulative CGPA * (0.00 - 10.00)</label>
+                        {{ form.cgpa }}
+                        {% if form.cgpa.errors %}<div class="text-danger small mt-1">{{ form.cgpa.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Graduation Year *</label>
+                        {{ form.graduation_year }}
+                        {% if form.graduation_year.errors %}<div class="text-danger small mt-1">{{ form.graduation_year.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Resume Link * (Google Drive / Cloud URL)</label>
+                        {{ form.resume_link }}
+                        <div class="form-text">Ensure link permissions are set to "Anyone with the link can view".</div>
+                        {% if form.resume_link.errors %}<div class="text-danger small mt-1">{{ form.resume_link.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-indigo w-100 py-2 fs-5">
+                    <i class="bi bi-person-check-fill me-1"></i> Register as Student
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top small text-muted">
+                Already registered? <a href="{% url 'accounts:login' %}" class="fw-semibold text-decoration-none">Log in here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

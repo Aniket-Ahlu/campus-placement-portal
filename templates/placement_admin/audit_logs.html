@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}System Audit Logs | Placement Admin Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'placement_admin:dashboard' %}">Admin Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Audit Logs</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Administrative Audit Trail</h2>
+        <p class="text-muted mb-0">Append-only immutable record of all moderation decisions made by placement administrators.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+            <i class="bi bi-shield-lock-fill text-indigo me-1"></i> {{ total_logs }} Total Records
+        </span>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card p-3 shadow-sm mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Filter by Action</label>
+            <select name="action" class="form-select form-select-sm">
+                <option value="">All Actions</option>
+                {% for act_val, act_lbl in action_choices %}
+                    <option value="{{ act_val }}" {% if selected_action == act_val %}selected{% endif %}>{{ act_lbl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Filter by Target Entity</label>
+            <select name="target_type" class="form-select form-select-sm">
+                <option value="">All Targets</option>
+                {% for tgt_val, tgt_lbl in target_choices %}
+                    <option value="{{ tgt_val }}" {% if selected_target == tgt_val %}selected{% endif %}>{{ tgt_lbl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-indigo btn-sm">Apply Filter</button>
+        </div>
+        <div class="col-md-2 text-md-end">
+            {% if selected_action or selected_target %}
+                <a href="{% url 'placement_admin:audit_logs' %}" class="small text-danger text-decoration-none">
+                    <i class="bi bi-x-circle me-1"></i> Clear Filter
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Audit Log Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th class="ps-4">Timestamp (UTC)</th>
+                            <th>Admin ID</th>
+                            <th>Admin Username</th>
+                            <th>Action</th>
+                            <th>Target Entity</th>
+                            <th>Target Label</th>
+                            <th class="pe-4">Reason / Audit Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj %}
+                            <tr>
+                                <td class="ps-4 text-muted small">
+                                    {{ log.timestamp|date:"M d, Y, g:i:s A" }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">#{{ log.admin_id }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ log.admin_username }}</strong>
+                                </td>
+                                <td>
+                                    {% if log.action == 'APPROVED' %}
+                                        <span class="badge bg-success">APPROVED</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">REJECTED</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-dark border">{{ log.target_type }} #{{ log.target_id }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ log.target_label }}</span>
+                                </td>
+                                <td class="pe-4 text-secondary small">
+                                    {{ log.reason }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="p-3 border-top d-flex justify-content-center">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&action={{ selected_action }}&target_type={{ selected_target }}">&laquo; Previous</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link bg-indigo border-indigo">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&action={{ selected_action }}&target_type={{ selected_target }}">Next &raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-shield-x fs-1 d-block mb-3 text-secondary"></i>
+                <h5 class="fw-bold">No Audit Records Found</h5>
+                <p class="small mb-0">No actions logged under the chosen filtering parameters.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

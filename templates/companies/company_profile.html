@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Company Profile - Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_dashboard' %}">Recruiter Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Company Profile</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Approval Status Card -->
+        {% if company %}
+            <div class="card p-4 shadow-sm mb-4 border-0">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-1">{{ company.name }}</h5>
+                        <p class="text-muted small mb-0">Registered on {{ company.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        {% if company.status == 'APPROVED' %}
+                            <span class="badge bg-success fs-6"><i class="bi bi-patch-check-fill me-1"></i> Approved by Placement Admin</span>
+                        {% elif company.status == 'PENDING' %}
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-hourglass-split me-1"></i> Pending Admin Verification</span>
+                        {% elif company.status == 'REJECTED' %}
+                            <span class="badge bg-danger fs-6"><i class="bi bi-x-circle-fill me-1"></i> Registration Rejected</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if company.status == 'REJECTED' and company.rejection_reason %}
+                    <div class="alert alert-danger mt-3 mb-0 small">
+                        <strong><i class="bi bi-exclamation-octagon-fill me-1"></i> Placement Admin Reason:</strong>
+                        <div>{{ company.rejection_reason }}</div>
+                        <div class="mt-2 text-dark fw-semibold">You may update your details below and resubmit for re-evaluation.</div>
+                    </div>
+                {% elif company.status == 'PENDING' %}
+                    <div class="alert alert-warning mt-3 mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i> Your organization is currently under institutional compliance review. You can create job postings once verified.
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Company Details Form -->
+        <div class="card p-4 p-md-5 shadow-sm">
+            <h4 class="fw-bold mb-3 border-bottom pb-2 text-dark">
+                <i class="bi bi-building-gear text-primary me-2"></i>Organization Profile & Contact
+            </h4>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Company Legal Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Corporate Website URL *</label>
+                        {{ form.website }}
+                        {% if form.website.errors %}<div class="text-danger small mt-1">{{ form.website.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Primary Industry *</label>
+                        {{ form.industry }}
+                        {% if form.industry.errors %}<div class="text-danger small mt-1">{{ form.industry.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Office / Headquarters Location *</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Company Overview & Mission *</label>
+                        {{ form.description }}
+                        <div class="form-text">Share your company's core products, work environment, and what makes your workplace special.</div>
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'jobs:recruiter_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i> Save Company Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

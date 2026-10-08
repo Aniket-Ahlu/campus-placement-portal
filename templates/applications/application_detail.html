@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Application #{{ application.id }} - {{ application.posting.title }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'applications:my_applications' %}">My Applications</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Application #{{ application.id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div data-detail-app-id="{{ application.id }}">
+    <!-- Top Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <span class="badge {{ application.badge_class }} fs-6 mb-2 detail-status-badge">
+                {{ application.get_status_display }}
+            </span>
+            <h2 class="fw-bold mb-1">{{ application.posting.title }}</h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-building me-1"></i> {{ application.posting.company.name }} &bull;
+                <i class="bi bi-geo-alt me-1"></i> {{ application.posting.location }} &bull;
+                <i class="bi bi-calendar3 me-1"></i> Applied on {{ application.applied_at|date:"M d, Y" }}
+            </p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <div id="status-feed-indicator" class="d-inline-block mb-2">
+                <span class="badge bg-light text-dark border px-3 py-2 small shadow-sm" id="status-feed-last-sync">
+                    <span class="live-pulse me-1"></span> Live Sync Active
+                </span>
+            </div>
+
+            <!-- Withdraw Action Container -->
+            <div id="withdraw-button-container">
+                {% if application.can_withdraw %}
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                        <i class="bi bi-x-circle me-1"></i> Withdraw Application
+                    </button>
+                {% else %}
+                    <span class="badge bg-secondary">Application Finalized</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Visual Timeline / Stepper Card -->
+        <div class="col-lg-7">
+            <div class="card p-4 shadow-sm mb-4">
+                <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">
+                    <i class="bi bi-diagram-3-fill text-indigo me-2"></i>Recruitment Pipeline Timeline
+                </h5>
+
+                <ul class="timeline">
+                    {% for h in history %}
+                        <li class="timeline-item">
+                            <span class="timeline-marker {% if h.new_status == 'OFFERED' %}success{% elif h.new_status == 'REJECTED' or h.new_status == 'WITHDRAWN' %}danger{% elif h.new_status == 'INTERVIEW' %}warning{% endif %}"></span>
+                            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                <h6 class="fw-bold mb-0 text-dark">
+                                    Stage Transition:
+                                    <span class="badge bg-indigo-light text-indigo ms-1">{{ h.new_status }}</span>
+                                </h6>
+                                <span class="text-muted small">{{ h.changed_at|date:"M d, Y, g:i A" }}</span>
+                            </div>
+                            {% if h.note %}
+                                <div class="p-2 bg-light rounded text-secondary small border">
+                                    <i class="bi bi-chat-left-quote text-muted me-1"></i> {{ h.note }}
+                                </div>
+                            {% endif %}
+                            <div class="text-muted small mt-1">
+                                <i class="bi bi-person me-1"></i> Updated by: {{ h.changed_by.username|default:"System" }}
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="timeline-item">
+                            <span class="timeline-marker"></span>
+                            <h6 class="fw-bold mb-1">Application Submitted</h6>
+                            <span class="text-muted small">{{ application.applied_at|date:"M d, Y, g:i A" }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Role Overview and Candidate Snapshot -->
+        <div class="col-lg-5">
+            <!-- Job Summary Card -->
+            <div class="card p-4 shadow-sm mb-4">
+                <h5 class="fw-bold mb-3 text-dark">Job Details</h5>
+                <ul class="list-unstyled small mb-3">
+                    <li class="mb-2"><strong>Company:</strong> {{ application.posting.company.name }}</li>
+                    <li class="mb-2"><strong>Opportunity Type:</strong> {{ application.posting.get_job_type_display }}</li>
+                    <li class="mb-2"><strong>Package / Stipend:</strong> <span class="text-success fw-bold">{{ application.posting.salary_or_stipend }}</span></li>
+                    <li class="mb-2"><strong>Location:</strong> {{ application.posting.location }}</li>
+                    <li class="mb-2"><strong>Minimum Required CGPA:</strong> {{ application.posting.min_cgpa }}</li>
+                </ul>
+                <a href="{% url 'jobs:detail' application.posting.id %}" class="btn btn-outline-primary btn-sm">
+                    View Full Job Posting &rarr;
+                </a>
+            </div>
+
+            <!-- Recruiter Feedback Card -->
+            {% if application.recruiter_note %}
+                <div class="card p-4 shadow-sm mb-4 border-info">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-dots-fill text-info me-2"></i>Recruiter Remarks</h6>
+                    <p class="text-secondary small mb-0">{{ application.recruiter_note }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Confirmation Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-danger" id="withdrawModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Application Withdrawal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to withdraw your application for <strong>{{ application.posting.title }}</strong> at <strong>{{ application.posting.company.name }}</strong>?</p>
+                <div class="alert alert-warning small mb-0">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    <strong>Important:</strong> Withdrawal is final. You will not be able to reapply or undo this action once processed.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Application</button>
+                <form method="post" action="{% url 'applications:withdraw' application.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        Confirm & Withdraw
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

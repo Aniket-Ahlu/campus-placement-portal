@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Applicant - {{ profile.full_name|default:application.student.username }} | Campus Placement Portal{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'core:landing' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'jobs:recruiter_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'applications:recruiter_applicants' application.posting.id %}">Applicants</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ profile.full_name|default:application.student.username }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <span class="badge {{ application.badge_class }} fs-6 mb-1">{{ application.get_status_display }}</span>
+        <h2 class="fw-bold mb-0">{{ profile.full_name|default:application.student.username }}</h2>
+        <p class="text-muted mb-0">Applying for <strong>{{ application.posting.title }}</strong> &bull; Applied {{ application.applied_at|date:"M d, Y, g:i A" }}</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <a href="{% url 'applications:recruiter_applicants' application.posting.id %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Applicants List
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Student Academic Profile & Pipeline Form -->
+    <div class="col-lg-7">
+        <!-- Candidate Overview Card -->
+        <div class="card p-4 shadow-sm mb-4">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="bi bi-person-bounding-box text-primary me-2"></i>Candidate Academic Credentials
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm small mb-3">
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold" style="width: 35%;">Branch of Study</td>
+                            <td>{{ profile.branch.name|default:"Not specified" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Cumulative CGPA</td>
+                            <td><strong class="fs-6 text-dark">{{ profile.cgpa|default:"N/A" }}</strong> / 10.00</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Graduation Batch</td>
+                            <td>Class of {{ profile.graduation_year|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Contact Email</td>
+                            <td>{{ application.student.email }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">Phone Number</td>
+                            <td>{{ profile.phone|default:"Not provided" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {% if profile.resume_link %}
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded border">
+                    <div>
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-3 me-2"></i>
+                        <strong>Candidate Resume Document</strong>
+                    </div>
+                    <a href="{{ profile.resume_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Open Resume PDF
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-secondary small mb-0">No external resume link provided by candidate.</div>
+            {% endif %}
+        </div>
+
+        <!-- Recruiter Status Transition & Notes Form -->
+        <div class="card p-4 shadow-sm mb-4">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="bi bi-sliders text-primary me-2"></i>Stage Progression & Evaluation
+            </h5>
+
+            {% if application.is_final %}
+                <div class="alert alert-secondary small">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    This application is in the final state <strong>{{ application.get_status_display }}</strong> and cannot be transitioned further. You may still update internal recruiter remarks below.
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if not application.is_final %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Advance Pipeline Stage</label>
+                        <select name="status" class="form-select">
+                            <option value="{{ application.status }}" selected>Current: {{ application.get_status_display }} (No change)</option>
+                            {% for st_code, st_name in allowed_choices %}
+                                <option value="{{ st_code }}">Advance to: {{ st_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small">
+                            Only valid transitions under the pipeline rule (APPLIED &rarr; UNDER_REVIEW &rarr; SHORTLISTED &rarr; INTERVIEW &rarr; OFFERED, or REJECTED) are selectable.
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Recruiter Remarks / Interview Notes</label>
+                    <textarea name="recruiter_note" class="form-control" rows="3" placeholder="Add feedback, screening notes, or interview observations...">{{ application.recruiter_note }}</textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2-circle me-1"></i> Update Candidate Stage & Notes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Audit Timeline of Transitions -->
+    <div class="col-lg-5">
+        <div class="card p-4 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                <i class="bi bi-clock-history text-indigo me-2"></i>Stage History Log
+            </h5>
+
+            <ul class="timeline">
+                {% for h in history %}
+                    <li class="timeline-item">
+                        <span class="timeline-marker {% if h.new_status == 'OFFERED' %}success{% elif h.new_status == 'REJECTED' or h.new_status == 'WITHDRAWN' %}danger{% elif h.new_status == 'INTERVIEW' %}warning{% endif %}"></span>
+                        <div class="fw-bold text-dark small mb-1">
+                            {{ h.old_status }} &rarr; <span class="badge bg-indigo-light text-indigo">{{ h.new_status }}</span>
+                        </div>
+                        {% if h.note %}
+                            <div class="small text-secondary bg-light p-2 rounded border mb-1">
+                                {{ h.note }}
+                            </div>
+                        {% endif %}
+                        <div class="text-muted small" style="font-size: 0.75rem;">
+                            By: {{ h.changed_by.username|default:"System" }} &bull; {{ h.changed_at|date:"M d, Y, g:i A" }}
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="timeline-item">
+                        <span class="timeline-marker"></span>
+                        <div class="fw-bold small">Application Submitted</div>
+                        <div class="text-muted small">{{ application.applied_at|date:"M d, Y" }}</div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -127,45 +127,99 @@ All demo accounts can be initialized using `python manage.py seed_demo --reset`.
 
 ### Setup Instructions
 
-1 . 1. **Clone the Repository**: ```bash git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git cd campus-placement-portal ```
+### Setup Instructions
+
+1. **Clone the Repository**:
+```bash
+   git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
+   cd campus-placement-portal
+```
+
 2. **Create and Activate a Virtual Environment**:
    - On Windows (PowerShell):
-     ```powershell
+```powershell
      python -m venv venv
      .\venv\Scripts\Activate.ps1
-     ```
+```
+     If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again.
    - On macOS / Linux:
-     ```bash
+```bash
      python3 -m venv venv
      source venv/bin/activate
-     ```
+```
 
 3. **Install Requirements**:
-   ```bash
+```bash
    pip install -r requirements.txt
-   ```
+```
 
 4. **Apply Database Migrations**:
-   ```bash
+```bash
    python manage.py migrate
-   ```
+```
 
-5. **Seed Demo Data**:
-   ```bash
+5. **Seed Demo Data** (`--reset` clears any existing demo data first):
+```bash
    python manage.py seed_demo --reset
-   ```
+```
 
 6. **Start the Development Server**:
-   ```bash
+```bash
    python manage.py runserver
-   ```
+```
 
 7. **Access the Portal**:
    - Web Application: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
    - Admin Console: [http://127.0.0.1:8000/placement-admin/](http://127.0.0.1:8000/placement-admin/)
    - Django Admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 
----
+   Log in with the accounts in the [Credentials Table](#credentials-table).### Setup Instructions
+
+1. **Clone the Repository**:
+```bash
+   git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
+   cd campus-placement-portal
+```
+
+2. **Create and Activate a Virtual Environment**:
+   - On Windows (PowerShell):
+```powershell
+     python -m venv venv
+     .\venv\Scripts\Activate.ps1
+```
+     If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again.
+   - On macOS / Linux:
+```bash
+     python3 -m venv venv
+     source venv/bin/activate
+```
+
+3. **Install Requirements**:
+```bash
+   pip install -r requirements.txt
+```
+
+4. **Apply Database Migrations**:
+```bash
+   python manage.py migrate
+```
+
+5. **Seed Demo Data** (`--reset` clears any existing demo data first):
+```bash
+   python manage.py seed_demo --reset
+```
+
+6. **Start the Development Server**:
+```bash
+   python manage.py runserver
+```
+
+7. **Access the Portal**:
+   - Web Application: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+   - Admin Console: [http://127.0.0.1:8000/placement-admin/](http://127.0.0.1:8000/placement-admin/)
+   - Django Admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+
+   Log in with the accounts in the [Credentials Table](#credentials-table).
 
 ## Running Tests
 

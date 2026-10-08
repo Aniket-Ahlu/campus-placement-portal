@@ -128,98 +128,57 @@ All demo accounts can be initialized using `python manage.py seed_demo --reset`.
 ### Setup Instructions
 
 ### Setup Instructions
+### Setup Instructions
 
-1. **Clone the Repository**:
+**Step 1 – Clone the repository**
 ```bash
-   git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
-   cd campus-placement-portal
+git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
+cd campus-placement-portal
 ```
 
-2. **Create and Activate a Virtual Environment**:
-   - On Windows (PowerShell):
+**Step 2 – Create and activate a virtual environment**
+
+Windows (PowerShell):
 ```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 ```
-     If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again.
-   - On macOS / Linux:
+If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again.
+
+macOS / Linux:
 ```bash
-     python3 -m venv venv
-     source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-3. **Install Requirements**:
+**Step 3 – Install requirements**
 ```bash
-   pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-4. **Apply Database Migrations**:
+**Step 4 – Apply database migrations**
 ```bash
-   python manage.py migrate
+python manage.py migrate
 ```
 
-5. **Seed Demo Data** (`--reset` clears any existing demo data first):
+**Step 5 – Seed demo data** (`--reset` clears any existing demo data first)
 ```bash
-   python manage.py seed_demo --reset
+python manage.py seed_demo --reset
 ```
 
-6. **Start the Development Server**:
+**Step 6 – Start the development server**
 ```bash
-   python manage.py runserver
+python manage.py runserver
 ```
 
-7. **Access the Portal**:
-   - Web Application: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-   - Admin Console: [http://127.0.0.1:8000/placement-admin/](http://127.0.0.1:8000/placement-admin/)
-   - Django Admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+**Step 7 – Open the portal**
+- Web Application: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- Admin Console: [http://127.0.0.1:8000/placement-admin/](http://127.0.0.1:8000/placement-admin/)
+- Django Admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 
-   Log in with the accounts in the [Credentials Table](#credentials-table).### Setup Instructions
+Log in with the accounts in the [Credentials Table](#credentials-table).
 
-1. **Clone the Repository**:
-```bash
-   git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
-   cd campus-placement-portal
-```
-
-2. **Create and Activate a Virtual Environment**:
-   - On Windows (PowerShell):
-```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
-```
-     If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again.
-   - On macOS / Linux:
-```bash
-     python3 -m venv venv
-     source venv/bin/activate
-```
-
-3. **Install Requirements**:
-```bash
-   pip install -r requirements.txt
-```
-
-4. **Apply Database Migrations**:
-```bash
-   python manage.py migrate
-```
-
-5. **Seed Demo Data** (`--reset` clears any existing demo data first):
-```bash
-   python manage.py seed_demo --reset
-```
-
-6. **Start the Development Server**:
-```bash
-   python manage.py runserver
-```
-
-7. **Access the Portal**:
-   - Web Application: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-   - Admin Console: [http://127.0.0.1:8000/placement-admin/](http://127.0.0.1:8000/placement-admin/)
-   - Django Admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
-
-   Log in with the accounts in the [Credentials Table](#credentials-table).
+---
 
 ## Running Tests
 

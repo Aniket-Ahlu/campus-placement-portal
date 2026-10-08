@@ -16,8 +16,8 @@ A robust, multi-page web application built with **Python 3.11+** and **Django 5.
 - [Local Setup & Quickstart](#local-setup--quickstart)
 - [Running Tests](#running-tests)
 - [Folder Structure](#folder-structure)
-- [Assumptions](#assumptions)
-- [Future Improvements](#future-improvements)
+
+
 
 ---
 
@@ -247,26 +247,4 @@ campus_placement_portal/
 ├── requirements.txt          # Pinned Django dependency
 └── README.md
 ```
-
----
-
-## Assumptions
-
-1. **Single Company per Recruiter**: Each recruiter user account is associated with one primary organization (`Company.owner = recruiter`), reflecting standard campus recruiter accounts.
-2. **Snapshot Audit Logging**: `AdminActionLog` stores snapshot values of the admin ID, admin username, and target label at the moment of moderation. If an administrator account is modified or deleted later, the historical log remains intact.
-3. **Empty Branches Indicates Open to All**: When a job posting has no branches selected in `allowed_branches`, it is treated as open to all engineering disciplines.
-4. **Optional Graduation Year**: When `graduation_year` is left blank on a job posting, the role is open to all passing batches.
-5. **Real-Time Polling Rate**: Polling interval is set to 15 seconds (`15000ms`), balancing fresh status updates with server load.
-6. **Soft Status Reset on Edit**: Whenever a recruiter modifies an already-approved job posting, the system resets its status to `PENDING` and clears previous rejection reasons to prevent unapproved changes to core eligibility criteria.
-7. **Strict Cross-Role Boundaries**: Accessing an area outside a user's role (e.g. a student accessing the recruiter dashboard, or a recruiter accessing admin moderation queues) produces an explicit HTTP 403 Forbidden response.
-
----
-
-## Future Improvements
-
-1. **Email / In-App Notifications**: Real-time email notifications (via Django's email backend) when an applicant's stage changes or when an admin reviews a posting.
-2. **WebSocket / Server-Sent Events (SSE)**: Upgrade from 15-second client polling to WebSockets or SSE using Django Channels for instant status pushes.
-3. **Resume File Uploads & Cloud Storage**: Support direct PDF document uploads to AWS S3 or Google Cloud Storage in addition to URL links, with automated ATS parsing.
-4. **Interview Scheduling & Calendar Integration**: Allow recruiters to attach date, time slots, and meeting links (Google Meet / Zoom) directly to applications when transitioning to `INTERVIEW`.
-5. **Analytics & Placement Reporting**: Exportable Excel/CSV placement reports, average package analytics by branch, and placement offer acceptance tracking for university accreditation.
 

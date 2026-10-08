@@ -17,8 +17,6 @@ A robust, multi-page web application built with **Python 3.11+** and **Django 5.
 - [Running Tests](#running-tests)
 - [Folder Structure](#folder-structure)
 
-
-
 ---
 
 ## Project Overview
@@ -127,9 +125,6 @@ All demo accounts can be initialized using `python manage.py seed_demo --reset`.
 
 ### Setup Instructions
 
-### Setup Instructions
-### Setup Instructions
-
 **Step 1 – Clone the repository**
 ```bash
 git clone https://github.com/Aniket-Ahlu/campus-placement-portal.git
@@ -188,9 +183,9 @@ The test suite covers eligibility logic, server-side apply enforcement, posting 
 python manage.py test
 ```
 
-Expected output:
+Expected output (the test count may vary as tests are added):
 ```text
-Ran 22 tests in ...s
+Ran N tests in ...s
 
 OK
 ```
@@ -200,7 +195,7 @@ OK
 ## Folder Structure
 
 ```text
-campus_placement_portal/
+campus-placement-portal/
 ├── config/
 │   ├── __init__.py
 │   ├── settings.py           # Project settings, AUTH_USER_MODEL, template/static configs
@@ -214,9 +209,9 @@ campus_placement_portal/
 │   ├── context_processors.py # portal_context supplying role info and badge counts
 │   ├── views.py              # Landing page, dashboard_redirect, 403/404/500 handlers
 │   ├── urls.py
-│   ├── tests.py              # Unit, permission, and role page smoke tests (22 tests)
+│   ├── tests.py              # Unit, permission, and role page smoke tests
 │   └── management/commands/
-│       └── seed_demo.py      # Idempotent demo database seeder (--reset flag)
+│       └── seed_demo.py      # Demo database seeder (--reset wipes and reseeds)
 ├── accounts/
 │   ├── models.py             # Custom User model (role choices) & StudentProfile
 │   ├── forms.py              # Registration and profile edit forms
@@ -257,7 +252,7 @@ campus_placement_portal/
 │   ├── jobs/
 │   ├── applications/
 │   └── placement_admin/
+├── manage.py
 ├── requirements.txt          # Pinned Django dependency
 └── README.md
 ```
-
